@@ -9,12 +9,12 @@
 #include <SD.h> // SD library
  
 // Define constants
-#define DS3231_I2C_ADDRESS 0x68 // Each I2C object has a unique bus address, the DS1307 (Real Time Clock) is 0x68 // add DS3231 RTC correct HEX-Address whict is 0x57 
+#define DS3231_I2C_ADDRESS 0x68 // Each I2C object has a unique bus address, the DS3231 (Real Time Clock) is 0x68
 #define ONE_WIRE_BUS 2 // Define that the input/output data pin from the DS18B20 (temperature sensor) is connected in Arduino's digital I/O pin number 2
 #define TEMPERATURE_PRECISION 12 // Define the precision of the conversion: 9bit, 10bit, 11bit or 12bit
  
 // Declare objects
-RTC_DS3231 RTC; // Declare variable RTC of type RTC_DS1307 //add RTC_DS3231 correct rtc module
+RTC_DS3231 RTC; // Declare variable RTC of type RTC_DS3231
 OneWire oneWire(ONE_WIRE_BUS); // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 DallasTemperature sensors(&oneWire); // Pass our oneWire reference to Dallas Temperature. That is, tell Dallas Temperature Library to use oneWire Library
 File myFile; // Declare variable myFile of type File
@@ -22,7 +22,7 @@ File myFile; // Declare variable myFile of type File
 // Declare variables
 DeviceAddress temperatureSensor1, temperatureSensor2, temperatureSensor3; // Arrays to store addresses
 unsigned int second, minute, hour, dayOfTheWeek, day, month, year;
-unsigned char previous_second=1; // This variable is used to write the datalog.txt at a pace of 10 seconds//-------------------------------------------------MIKA TAMA ON?
+unsigned char previous_second=1; // This variable is used to write the datalog.txt at a pace of 10 seconds
 unsigned int year_2000; // "year" goes from 0 up to 99 and not from 2000 up to 2099. This variable is used to simplify this situation
 unsigned int counter=0; const unsigned int maxcounter=3000;
 unsigned char flag=0;
@@ -31,12 +31,13 @@ byte decToBcd(byte val){return ( (val/10*16) + (val%10) );} // Convert normal de
 byte bcdToDec(byte val){return ( (val/16*10) + (val%16) );} // Convert binary coded decimal to normal decimal numbers
  
 const char chipSelect = 10; // SD module's Chip Select (CS) wire connect pin number 10 
-const char cardDetect = 3;  // SD module's Card Detect (CD) pin
+const char cardDetect = 3;  // SD module's Card Detect (CD) wire connect pin number 3
  
 // The setup function runs only once when you power or reset the board
 void setup ()
 {
   pinMode(cardDetect, INPUT); // Initialize the cardDetect pin as an input
+
   
   Serial.begin(9600); // Open serial port and sets data rate to 9600 bps
   Wire.begin(); // Start the Wire (I2C communications)
@@ -159,7 +160,7 @@ void loop ()
   
    while (Serial.read() >= 0){;} // Flush remaining characters
   }
-//-----------------------------------------------------------------------------------------------------------------------------------------------------  
+ 
   if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)
    {
     temperatureLogger();
@@ -175,7 +176,6 @@ void loop ()
     previous_second = second;
    }
 }
-//----------------------------------------------------------------------------------------------------------------------------------------------------- 
  
 // Print hour, minute and second in Serial Monitor
 void printTime (void)
@@ -577,7 +577,6 @@ void repetitiveStrings(void)
  Serial.println();
 }
  
-//----------------------------------------------------------------------------------------------------------------------------------------------------- 
 // Write time, date and temperature into the datalog file
 void temperatureLogger(void)
 {
@@ -625,8 +624,7 @@ void temperatureLogger(void)
     myFile.print(F("0")); myFile.print(now.day(), DEC); myFile.print(F("/"));
   }
     else { myFile.print(now.day(), DEC); myFile.print(F("/")); }
-//-----------------------------------------------------------------------------------------------------------------------------------------------------    
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  
+
   // Write month into the datalog file
   switch(now.month())
   {
@@ -676,8 +674,7 @@ void temperatureLogger(void)
   Serial.println();
  }
 }
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  
- 
+
 // Print the address of a device in Serial Monitor
 void printAddress(DeviceAddress deviceAddress)
 {
@@ -705,16 +702,14 @@ void printTemperatureInC(DeviceAddress deviceAddress)
   Serial.print(tempC);
   Serial.println(F(" degrees Celsius"));
 }
- 
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  
+
 // Write the temperature of a device in ºC into the SD memory card
 void writeTemperatureInC(DeviceAddress deviceAddress)
 {
   float tempC = sensors.getTempC(deviceAddress);
   myFile.print(tempC);
   myFile.println(F(" degrees Celsius"));
-}
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  
+} 
  
 // Initialize serial communication
 void initSerialCommunication()
@@ -748,20 +743,19 @@ void initRTC()
   if (RTC.lostPower())
    {Serial.println(F("Failed debug row 769")); delay(7000); initRTC();}
 }
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
+ 
 // Initialize SD card
 void initSDcard()
 {
  Serial.print(F("SD card: "));
-  pinMode(SS, OUTPUT); // On the Ethernet Shield, Chip Select (CS) is pin 4. It's set as an output by default. // pinMode(SS, OUTPUT);
+  pinMode(10, OUTPUT); // On the Ethernet Shield, Chip Select (CS) is pin 4. It's set as an output by default. // pinMode(SS, OUTPUT);
                        // Note that even if it's not used as the CS pin, the hardware SS pin
                        // (10 on most Arduino boards, 53 on the Mega) must be left as an output or the SD library functions will not work.
   if (!SD.begin(chipSelect))
    {Serial.println(F("Debug Initialization failed")); delay(7000); initSDcard();}
   else Serial.println(F("Debug initialization done all OKEY"));
 }
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  
- 
+
 // Initialize OneWire devices
 void initOneWire()
 {
