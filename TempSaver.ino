@@ -45,7 +45,7 @@ void setup ()
   sensors.begin(); // Start the DallasTemperature library
   
   while (! Serial); // Wait until Serial is ready (needed for Leonardo only)
-  Serial.setTimeout(10); // Sets the maximum milliseconds to wait for serial data
+  Serial.setTimeout(75); // Sets the maximum milliseconds to wait for serial data//------------------------------------------------------tassa oli arvona 10 > 75
   
   Serial.println(F("INITIALIZING:")); // Initialize services
   
@@ -145,7 +145,7 @@ void loop ()
    Serial.read(); // Clear serial buffer
    Serial.println(F("- SD card mounting -"));
    Serial.print(F("SD card mounted"));
-   SD.begin(chipSelect);
+   SD.begin(chipSelect);//---------------------------------------------------------------------------------------------------------------"m" kirjainta painanlla alkaa tietojren tallennus
    Serial.println();
    Serial.println();
    repetitiveStrings();
@@ -160,19 +160,24 @@ void loop ()
   
    while (Serial.read() >= 0){;} // Flush remaining characters
   }
- 
-  if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)
+ //** This will be trigger and give command to Logger save data when SD Module´s cardDetect are LOW,  (connected to pin 3) */
+  //if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)//EI toimi ALKUperainen
+    //Dwork//if (digitalRead(cardDetect) == LOW )//&& second%10 == 0 && previous_second != second)
+  if (digitalRead(cardDetect) == HIGH && second%10 == 0 && previous_second != second)    //muutos LOW >HIGH //----------------------------------------------------TOIMII
    {
     temperatureLogger();
     previous_second = second;
    }
    
-  if (digitalRead(cardDetect) == HIGH && second%10 == 0 && previous_second != second)
+ //** This will be give Failed info to user when SD Module´s cardDetect are HIGH. Means that there aren`t card in reader. */   
+  //if (digitalRead(cardDetect) == HIGH && second%10 == 0 && previous_second != second) //EI toimi
+  //Dwork//if (digitalRead(cardDetect) == HIGH)// && second%10 == 0 && previous_second != second)
+  if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)  //muutos HIGH < LOW //----------------------------------------------------TOIMII
    {
     Serial.println(F("- Datalog status -"));
     Serial.println(F("Failed - SD card was removed"));
     Serial.println();
-    SD.end();
+    SD.end(); //---------------------------------------------------------------------------------------------------------------KOkeile toimiiko taman kommentointi toimii ilmankin
     previous_second = second;
    }
 }
@@ -748,12 +753,13 @@ void initRTC()
 void initSDcard()
 {
  Serial.print(F("SD card: "));
-  pinMode(10, OUTPUT); // On the Ethernet Shield, Chip Select (CS) is pin 4. It's set as an output by default. // pinMode(SS, OUTPUT);
+  pinMode(chipSelect, OUTPUT); // On the Ethernet Shield, Chip Select (CS) is pin 4. It's set as an output by default. 
                        // Note that even if it's not used as the CS pin, the hardware SS pin
                        // (10 on most Arduino boards, 53 on the Mega) must be left as an output or the SD library functions will not work.
+                       //SD.begin(chipSelect);//ei toimi 
   if (!SD.begin(chipSelect))
    {Serial.println(F("Debug Initialization failed")); delay(7000); initSDcard();}
-  else Serial.println(F("Debug initialization done all OKEY"));
+  else Serial.println(F("Initialization done all OK!"));
 }
 
 // Initialize OneWire devices
