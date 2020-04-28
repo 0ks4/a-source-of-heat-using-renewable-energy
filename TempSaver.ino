@@ -1,5 +1,9 @@
-
-
+/** this source codes includes elements which are partly based the Arduino IDE libraries example codes
+Future changes to this project 
+- possibility to calculate energy (kWh) difference between the water temperature and the flow variable 
+- if necessary add more temperature sensors
+- change save file format .txt to > .csv -format 
+- make an addition to mount and unmount sd card using a push switch. card reader state indicated by the LED biode */
 // Import libraries
 #include <Wire.h> // I2C and TWI library
 #include <RTClib.h> // RTClib library
@@ -22,7 +26,7 @@ File myFile; // Declare variable myFile of type File
 // Declare variables
 DeviceAddress temperatureSensor1, temperatureSensor2, temperatureSensor3; // Arrays to store addresses
 unsigned int second, minute, hour, dayOfTheWeek, day, month, year;
-unsigned char previous_second=1; // This variable is used to write the datalog.txt at a pace of 10 seconds
+unsigned char previous_second=1; // This variable is used to write the datalog.txt at a based of 10 seconds
 unsigned int year_2000; // "year" goes from 0 up to 99 and not from 2000 up to 2099. This variable is used to simplify this situation
 unsigned int counter=0; const unsigned int maxcounter=3000;
 unsigned char flag=0;
@@ -45,7 +49,7 @@ void setup ()
   sensors.begin(); // Start the DallasTemperature library
   
   while (! Serial); // Wait until Serial is ready (needed for Leonardo only)
-  Serial.setTimeout(75); // Sets the maximum milliseconds to wait for serial data//------------------------------------------------------tassa oli arvona 10 > 75
+  Serial.setTimeout(75); // Sets the maximum milliseconds to wait for serial data//
   
   Serial.println(F("INITIALIZING:")); // Initialize services
   
@@ -128,7 +132,7 @@ void loop ()
    Serial.println();
    repetitiveStrings();
    }
-  
+  /** press "u" to remove safely sd card without fear of flash memory corruption */
    else if (Serial.peek() == 'u')
    {
    Serial.read(); // Clear serial buffer
@@ -139,13 +143,13 @@ void loop ()
    Serial.println();
    repetitiveStrings();
    }
-   
+   /**press "m" to mount sd card and start save tempretures*/
    else if (Serial.peek() == 'm')
    {
    Serial.read(); // Clear serial buffer
    Serial.println(F("- SD card mounting -"));
    Serial.print(F("SD card mounted"));
-   SD.begin(chipSelect);//---------------------------------------------------------------------------------------------------------------"m" kirjainta painanlla alkaa tietojren tallennus
+   SD.begin(chipSelect);//
    Serial.println();
    Serial.println();
    repetitiveStrings();
@@ -160,24 +164,22 @@ void loop ()
   
    while (Serial.read() >= 0){;} // Flush remaining characters
   }
- //** This will be trigger and give command to Logger save data when SD Module´s cardDetect are LOW,  (connected to pin 3) */
-  //if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)//EI toimi ALKUperainen
-    //Dwork//if (digitalRead(cardDetect) == LOW )//&& second%10 == 0 && previous_second != second)
-  if (digitalRead(cardDetect) == HIGH && second%10 == 0 && previous_second != second)    //muutos LOW >HIGH //----------------------------------------------------TOIMII
+ /** This will be trigger and give command to Logger save data when SD Module´s cardDetect are HIGH,  (connected to pin 3).
+  If you get alert "failed initialize sd module" in serial monitor change value HIGH to > LOW and make corresponding value change opposite to row 173 */
+  if (digitalRead(cardDetect) == HIGH && second%10 == 0 && previous_second != second)
    {
     temperatureLogger();
     previous_second = second;
    }
    
- //** This will be give Failed info to user when SD Module´s cardDetect are HIGH. Means that there aren`t card in reader. */   
-  //if (digitalRead(cardDetect) == HIGH && second%10 == 0 && previous_second != second) //EI toimi
-  //Dwork//if (digitalRead(cardDetect) == HIGH)// && second%10 == 0 && previous_second != second)
-  if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)  //muutos HIGH < LOW //----------------------------------------------------TOIMII
+ /** This will be give Failed info to user when SD Module´s cardDetect are HIGH. Means that there aren`t card in reader.
+  If you get alert "failed initialize sd module" in serial monitor change value LOW to > HIGH and make corresponding value change opposited to row 165 */
+  if (digitalRead(cardDetect) == LOW && second%10 == 0 && previous_second != second)
    {
     Serial.println(F("- Datalog status -"));
     Serial.println(F("Failed - SD card was removed"));
     Serial.println();
-    SD.end(); //---------------------------------------------------------------------------------------------------------------KOkeile toimiiko taman kommentointi toimii ilmankin
+    SD.end(); //
     previous_second = second;
    }
 }
@@ -733,20 +735,20 @@ void initRTC()
  Serial.print(F("RTC: "));
   if (RTC.lostPower()) // If the clock is not running, execute the following code
    {
-    Serial.print(F("Not Running! Restarting the RTC. debug row 756 "));
+    Serial.print(F("Not Running! Restarting the RTC check battery voltage level "));
     // Starts ticking the clock
     Wire.beginTransmission(DS3231_I2C_ADDRESS);
     Wire.write(0x00); // Move pointer to 0x00 byte address
     Wire.write(0x00); // Sends 0x00. The whole byte is set to zero (0x00). This also means seconds will reset!! Unless you use a mask -> homework :)
     Wire.endTransmission();
     
-    // Following line sets the RTC to the date & time to: 2015 January 01 - 00:00:00
-    RTC.adjust(DateTime(2015,1,1, 0,0,0)); // Sequence: year, month, day,  hour, minute, second
+    // Following line sets the RTC to the date & time to: 2020 January 01 - 00:00:00
+    RTC.adjust(DateTime(2020,1,1, 0,0,0)); // Sequence: year, month, day,  hour, minute, second
    }
   if (!RTC.lostPower())
-   {Serial.println(F("OK debug row 767"));}
+   {Serial.println(F("Real time clock OK"));}
   if (RTC.lostPower())
-   {Serial.println(F("Failed debug row 769")); delay(7000); initRTC();}
+   {Serial.println(F("Real time clock chip don´t work properly ")); delay(7000); initRTC();}
 }
  
 // Initialize SD card
